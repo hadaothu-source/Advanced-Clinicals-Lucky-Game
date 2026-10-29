@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Clinicals - Lucky Slot</title>
+    <!-- Tailwind CSS cho layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: '#1B2B6B',
+                        cream: '#FAF9F6',
+                        gold: '#D4AF37',
+                        pastelOrange: '#E58A63'
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #FAF9F6; overflow-x: hidden; }
+        
+        /* Slot Machine Styling */
+        .slot-machine-vault {
+            background: linear-gradient(145deg, #1B2B6B, #121f52);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 20px 40px rgba(0,0,0,0.2);
+            border: 6px solid #D4AF37;
+            position: relative;
+        }
+        
+        /* Inner window for reels */
+        .reel-window {
+            background: #fff;
+            box-shadow: inset 0 10px 15px -3px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            height: 120px;
+        }
+        
+        /* The strip containing symbols */
+        .reel-strip {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            /* Custom timing function for realistic spin stopping */
+            transition: transform 3.5s cubic-bezier(0.15, 0.9, 0.25, 1);
+            transform: translateY(0);
+        }
+        
+        .symbol {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        /* Lever animations */
+        .lever-arm {
+            transform-origin: bottom center;
+            transition: transform 0.4s ease-in-out;
+        }
+        .lever-pull { transform: rotateX(70deg) translateY(20px); }
+
+        /* Custom Modal */
+        #result-modal { backdrop-filter: blur(5px); }
+        .modal-content {
+            animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popUp {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 antialiased">
+
+    <!-- Navbar/Header -->
+    <header class="w-full bg-white shadow-sm border-b border-gray-100 py-4">
+        <div class="max-w-6xl mx-auto px-6 text-center md:text-left">
+            <h1 class="text-3xl font-serif font-bold text-navy tracking-wide">
+                Advanced Clinicals
+            </h1>
+        </div>
+    </header>
+
+    <!-- SECTION 1: HERO & SLOT MACHINE -->
+    <section class="max-w-6xl mx-auto px-6 py-12 lg:py-20">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            <!-- Left: Info & Form -->
+            <div class="order-2 lg:order-1 space-y-6">
+                <span class="inline-block py-1 px-3 rounded-full bg-pastelOrange/20 text-pastelOrange font-semibold text-sm tracking-widest">
+                    VINTAGE BEAUTY EVENT
+                </span>
+                <h2 class="text-4xl md:text-5xl font-serif font-bold text-navy leading-tight uppercase">
+                    Ready? Let's Play <br>
+                    <span class="text-pastelOrange italic">With Beauty!</span>
+                </h2>
+                <p class="text-gray-600 text-lg">
+                    Nhập thông tin đơn hàng để kích hoạt máy xèng may mắn. Trúng 100% các phần quà Dược mỹ phẩm chuẩn y khoa trị giá lên tới 5.000.000 VNĐ.
+                </p>
+
+                <!-- Input Form -->
+                <form id="spinForm" class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                        <input type="text" id="cusName" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-pastelOrange focus:outline-none" placeholder="VD: Nguyễn Văn A">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                            <input type="tel" id="cusPhone" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-pastelOrange focus:outline-none" placeholder="09xxxxxxxxx">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mã đơn hàng</label>
+                            <input type="text" id="orderId" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-pastelOrange focus:outline-none" placeholder="VD: AC12345">
+                        </div>
+                    </div>
+                    <button type="button" onclick="playGame()" class="w-full bg-navy text-white font-bold py-4 rounded-lg uppercase tracking-wider hover:bg-[#121f52] transition-colors shadow-md mt-4 text-lg">
+                        Gạt Cần / Quay Ngay
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right: The Slot Machine -->
+            <div class="order-1 lg:order-2 flex justify-center mt-8 lg:mt-0 relative">
+                <div class="w-full max-w-sm relative">
+                    <!-- Vault Dome Top -->
+                    <div class="bg-navy rounded-t-full pt-8 pb-4 px-6 border-t-8 border-x-8 border-gold shadow-xl text-center relative z-10">
+                        <div class="border-2 border-dashed border-pastelOrange/50 rounded-full py-3 bg-navy">
+                            <h3 class="text-gold font-serif text-2xl font-bold uppercase tracking-widest text-shadow">Lucky Slot</h3>
+                        </div>
+                    </div>
+                    
+                    <!-- Vault Body -->
+                    <div class="slot-machine-vault border-x-8 border-b-8 rounded-b-2xl p-6 md:p-8 z-10 relative">
+                        <!-- Reel Window Container -->
+                        <div class="reel-window rounded-lg border-4 border-gray-300 grid grid-cols-3 gap-1 p-1 bg-gray-200">
+                            <!-- Reel 1 -->
+                            <div class="bg-white overflow-hidden relative rounded shadow-inner">
+                                <div id="reel-1" class="reel-strip"></div>
+                            </div>
+                            <!-- Reel 2 -->
+                            <div class="bg-white overflow-hidden relative rounded shadow-inner">
+                                <div id="reel-2" class="reel-strip"></div>
+                            </div>
+                            <!-- Reel 3 -->
+                            <div class="bg-white overflow-hidden relative rounded shadow-inner">
+                                <div id="reel-3" class="reel-strip"></div>
+                            </div>
+                        </div>
+
+                        <!-- Decoration Buttons -->
+                        <div class="flex justify-center gap-4 mt-6">
+                            <div class="w-4 h-4 rounded-full bg-pastelOrange shadow-inner"></div>
+                            <div class="w-4 h-4 rounded-full bg-pastelOrange shadow-inner"></div>
+                            <div class="w-4 h-4 rounded-full bg-pastelOrange shadow-inner"></div>
+                        </div>
+                    </div>
+
+                    <!-- The Lever (Cần gạt) -->
+                    <div class="absolute -right-12 top-1/3 z-0 hidden md:block group cursor-pointer" onclick="playGame()">
+                        <!-- Base -->
+                        <div class="w-6 h-16 bg-gray-400 absolute left-0 top-1/2 -translate-y-1/2 rounded-r-lg border-y-2 border-r-2 border-gray-500 shadow-md"></div>
+                        <!-- Arm & Knob -->
+                        <div id="slot-lever" class="lever-arm absolute left-4 top-[-20px]">
+                            <div class="w-3 h-24 bg-gradient-to-b from-gray-300 to-gray-500 mx-auto rounded-full shadow-lg"></div>
+                            <div class="w-10 h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-full absolute -top-8 -left-3.5 shadow-xl border-2 border-red-700 group-hover:brightness-110"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- SECTION 2: CƠ CẤU GIẢI THƯỞNG -->
+    <section class="bg-white py-16 border-t border-cream">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-serif font-bold text-navy mb-4 uppercase">Cơ Cấu Giải Thưởng</h2>
+                <div class="w-24 h-1 bg-pastelOrange mx-auto"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Giải Nhất -->
+                <div class="bg-cream rounded-2xl p-6 text-center border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gold text-white text-xs font-bold px-3 py-1 rounded-bl-lg">01 GIẢI</div>
+                    <div class="text-6xl mb-4">💎</div>
+                    <h3 class="text-xl font-bold text-navy mb-2">GIẢI NHẤT</h3>
+                    <p class="font-medium text-gray-700 mb-2">Máy Triệt Lông Lạnh Sapphire Halio</p>
+                    <p class="text-pastelOrange font-bold text-sm">Trị giá: 5.000.000 VNĐ</p>
+                </div>
+                
+                <!-- Giải Nhì -->
+                <div class="bg-cream rounded-2xl p-6 text-center border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">15 GIẢI</div>
+                    <div class="text-6xl mb-4">🧴</div>
+                    <h3 class="text-xl font-bold text-navy mb-2">GIẢI NHÌ</h3>
+                    <p class="font-medium text-gray-700 mb-2">Kem Body HA Hyaluronic Acid Advanced Clinicals (454g)</p>
+                    <p class="text-pastelOrange font-bold text-sm">Trị giá: 799.000 VNĐ/giải</p>
+                </div>
+
+                <!-- Giải Ba -->
+                <div class="bg-cream rounded-2xl p-6 text-center border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-pastelOrange text-white text-xs font-bold px-3 py-1 rounded-bl-lg">40 GIẢI</div>
+                    <div class="text-6xl mb-4">🧪</div>
+                    <h3 class="text-xl font-bold text-navy mb-2">GIẢI BA</h3>
+                    <p class="font-medium text-gray-700 mb-2">Tuýp Kem Dưỡng 59g (Retinol / Vitamin C)</p>
+                    <p class="text-pastelOrange font-bold text-sm">Trị giá: 379.000 VNĐ/giải</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: THỂ LỆ & ƯU ĐÃI -->
+    <section class="py-16 bg-navy text-white">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-3xl font-serif font-bold mb-8 text-gold uppercase">Thể Lệ Đặc Quyền</h2>
+            <div class="flex flex-col md:flex-row gap-6 justify-center">
+                <div class="flex-1 bg-white/10 p-6 rounded-xl backdrop-blur-sm border border-white/20">
+                    <div class="text-2xl mb-2">✨</div>
+                    <p class="font-medium text-lg">Mua 01 Body Oil Vitamin C</p>
+                    <p class="text-pastelOrange font-bold mt-2 uppercase tracking-wide">Tặng ngay 01 Bàn chải khô</p>
+                </div>
+                <div class="flex-1 bg-white/10 p-6 rounded-xl backdrop-blur-sm border border-white/20">
+                    <div class="text-2xl mb-2">🎰</div>
+                    <p class="font-medium text-lg">Mua 01 sản phẩm Fullsize bất kỳ</p>
+                    <p class="text-pastelOrange font-bold mt-2 uppercase tracking-wide">Nhận 01 lượt quay Slot Machine</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: FOOTER (THÔNG TIN THUẦN TÚY) -->
+    <footer class="bg-gray-900 py-10 text-gray-400 text-center">
+        <div class="max-w-3xl mx-auto px-6 space-y-4">
+            <h3 class="text-2xl font-serif text-white mb-2">Advanced Clinicals</h3>
+            <p class="text-sm leading-relaxed">
+                Advanced Clinicals là thương hiệu chăm sóc da chuyên sâu đến từ Hoa Kỳ, cam kết mang lại các giải pháp Dược Mỹ Phẩm chất lượng cao, ứng dụng công nghệ tiên tiến với các thành phần y khoa được kiểm nghiệm lâm sàng nhằm tối ưu sức khỏe làn da của bạn.
+            </p>
+            <p class="text-xs pt-4 border-t border-gray-800">
+                &copy; 2024 Advanced Clinicals. All rights reserved. (For promotional purpose only)
+            </p>
+        </div>
+    </footer>
+
+    <!-- Result Modal (Popup Alert) -->
+    <div id="result-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60">
+        <div class="modal-content bg-white p-8 rounded-2xl max-w-md w-[90%] text-center shadow-2xl relative border-4 border-gold">
+            <div class="w-16 h-16 bg-gold text-white rounded-full flex items-center justify-center text-3xl absolute -top-8 left-1/2 -translate-x-1/2 border-4 border-white">
+                🎉
+            </div>
+            <h3 class="text-2xl font-serif font-bold text-navy mt-6 mb-2" id="modal-title">Chúc mừng!</h3>
+            <div class="text-5xl my-4" id="modal-icon"></div>
+            <p class="text-gray-700 mb-6 text-lg" id="modal-desc"></p>
+            <button onclick="closeModal()" class="bg-navy text-white px-8 py-3 rounded-lg font-bold uppercase hover:bg-opacity-90 transition w-full">
+                Nhận Quà Ngay
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC CHO MÁY XÈNG -->
+    <script>
+        // Cấu hình mảng giải thưởng khớp với UI
+        const prizes = [
+            { id: 0, icon: '💎', name: '01 Máy Triệt Lông Lạnh Sapphire Halio' },
+            { id: 1, icon: '🧴', name: 'Kem Body HA Hyaluronic Acid Advanced Clinicals' },
+            { id: 2, icon: '🧪', name: 'Tuýp Kem Dưỡng 59g (Retinol / Vitamin C)' }
+        ];
+
+        const symbolHeight = 120; // 120px là chiều cao của class .symbol
+        const totalLoops = 15; // Số lần lặp lại chuỗi icon để tạo độ dài giả cho trục quay
+        let isSpinning = false;
+
+        // Hàm khởi tạo nội dung cho các trục cuộn
+        function initReels() {
+            const reels = [document.getElementById('reel-1'), document.getElementById('reel-2'), document.getElementById('reel-3')];
+            
+            reels.forEach(reel => {
+                let stripHTML = '';
+                // Lặp chuỗi mảng giải thưởng nhiều lần để đổ vào cột
+                for (let i = 0; i < totalLoops; i++) {
+                    prizes.forEach(prize => {
+                        stripHTML += `<div class="symbol">${prize.icon}</div>`;
+                    });
+                }
+                reel.innerHTML = stripHTML;
+                // Đặt mặc định ở vị trí đầu tiên
+                reel.style.transform = `translateY(0px)`;
+                // Ép reflow để reset transition
+                reel.offsetHeight; 
+            });
+        }
+
+        // Chạy khởi tạo khi web vừa load xong
+        window.onload = initReels;
+
+        // Hàm xử lý khi bấm nút / gạt cần
+        function playGame() {
+            if (isSpinning) return;
+
+            // Lấy thông tin form
+            const name = document.getElementById('cusName').value.trim();
+            const phone = document.getElementById('cusPhone').value.trim();
+            const orderId = document.getElementById('orderId').value.trim();
+
+            if (!name || !phone || !orderId) {
+                alert("Vui lòng điền đầy đủ Họ tên, Số điện thoại và Mã đơn hàng để tham gia quay thưởng!");
+                return;
+            }
+
+            isSpinning = true;
+
+            // Hiệu ứng kéo cần gạt CSS
+            const lever = document.getElementById('slot-lever');
+            if (lever) {
+                lever.classList.add('lever-pull');
+                setTimeout(() => lever.classList.remove('lever-pull'), 400);
+            }
+
+            // Logic chọn ngẫu nhiên một giải thưởng để máy dừng lại (Chơi demo nên 100% ra ngẫu nhiên 3 icon giống nhau)
+            const winIndex = Math.floor(Math.random() * prizes.length);
+            const wonPrize = prizes[winIndex];
+
+            // Thiết lập vị trí dừng: Ở gần cuối mảng lặp (Ví dụ vòng lặp thứ totalLoops - 2)
+            const stopLoopTarget = totalLoops - 2; 
+            
+            // Công thức tính khoảng cách di chuyển trục (translateY):
+            // Số pixel cần kéo lên = (Số vòng lặp * số biểu tượng + Vị trí của biểu tượng trúng) * Chiều cao 1 biểu tượng
+            const stopPosition = -((stopLoopTarget * prizes.length) + winIndex) * symbolHeight;
+
+            // Reset transition (nếu quay nhiều lần)
+            const reels = [
+                document.getElementById('reel-1'), 
+                document.getElementById('reel-2'), 
+                document.getElementById('reel-3')
+            ];
+
+            reels.forEach(reel => {
+                reel.style.transition = 'none';
+                reel.style.transform = 'translateY(0)';
+            });
+
+            // Ép browser cập nhật DOM ngay để chuẩn bị chạy transition
+            setTimeout(() => {
+                // Đặt độ trễ khác nhau cho 3 trục (tạo cảm giác trục dừng dần)
+                reels[0].style.transition = 'transform 2.5s cubic-bezier(0.15, 0.9, 0.25, 1)';
+                reels[1].style.transition = 'transform 3.0s cubic-bezier(0.15, 0.9, 0.25, 1)';
+                reels[2].style.transition = 'transform 3.5s cubic-bezier(0.15, 0.9, 0.25, 1)';
+
+                reels[0].style.transform = `translateY(${stopPosition}px)`;
+                reels[1].style.transform = `translateY(${stopPosition}px)`;
+                reels[2].style.transform = `translateY(${stopPosition}px)`;
+                
+                // Đợi cuộn cuối cùng (3.5s) dừng lại thì hiển thị kết quả
+                setTimeout(() => {
+                    showResult(wonPrize);
+                    isSpinning = false;
+                }, 3700); // Đợi 3.7 giây
+                
+            }, 50);
+        }
+
+        function showResult(prize) {
+            document.getElementById('modal-icon').innerText = prize.icon;
+            
+            let resultText = "";
+            if(prize.id === 0) resultText = `Tuyệt vời! Bạn đã trúng GIẢI NHẤT: \n<span class="font-bold text-pastelOrange">${prize.name}</span>`;
+            else if(prize.id === 1) resultText = `Chúc mừng! Bạn đã trúng GIẢI NHÌ: \n<span class="font-bold text-pastelOrange">${prize.name}</span>`;
+            else resultText = `Chúc mừng! Bạn đã trúng GIẢI BA: \n<span class="font-bold text-pastelOrange">${prize.name}</span>`;
+
+            document.getElementById('modal-desc').innerHTML = resultText;
+            
+            const modal = document.getElementById('result-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('result-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            // Xóa form sau khi nhận giải thành công
+            document.getElementById('spinForm').reset();
+        }
+    </script>
+</body>
+</html>
